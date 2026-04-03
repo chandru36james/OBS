@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: pages
+    // Document ID: auto-generated or slug
+    // Fields:
+    //   - title: string (required)
+    //   - slug: string (required)
+    //   - content: string (required)
+    //   - seo: map (optional)
+    //   - updatedAt: timestamp (required)
+    //   - authorId: string (required)
+    //
+    // Collection: posts
+    // Document ID: auto-generated or slug
+    // Fields:
+    //   - title: string (required)
+    //   - slug: string (required)
+    //   - content: string (required)
+    //   - excerpt: string (optional)
+    //   - coverImage: string (optional)
+    //   - status: string (required, enum: ['draft', 'published'])
+    //   - seo: map (optional)
+    //   - publishedAt: timestamp (optional)
+    //   - updatedAt: timestamp (required)
+    //   - authorId: string (required)
+    //
+    // Collection: settings
+    // Document ID: global
+    // Fields:
+    //   - siteName: string
+    //   - globalSeo: map
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        (request.auth.token.email == "vgotyou3@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidPage(data) {
+      return data.keys().hasAll(['title', 'slug', 'content', 'updatedAt', 'authorId']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.slug is string && data.slug.size() > 0 && data.slug.size() < 200 &&
+             data.content is string && data.content.size() < 100000 &&
+             data.authorId == request.auth.uid;
+    }
+
+    function isValidPost(data) {
+      return data.keys().hasAll(['title', 'slug', 'content', 'status', 'updatedAt', 'authorId']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.slug is string && data.slug.size() > 0 && data.slug.size() < 200 &&
+             data.content is string && data.content.size() < 100000 &&
+             data.status in ['draft', 'published'] &&
+             data.authorId == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /pages/{pageId} {
+      allow read: if true; // Publicly readable
+      allow write: if isAdmin();
+    }
+
+    match /posts/{postId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /site_content/{contentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /brochures/{brochureId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /leads/{leadId} {
+      allow create: if request.resource.data.keys().hasAll(['mobile', 'projectType', 'status', 'createdAt', 'source']) &&
+                       request.resource.data.mobile is string && request.resource.data.mobile.size() > 0 && request.resource.data.mobile.size() < 20 &&
+                       request.resource.data.projectType is string && request.resource.data.projectType.size() > 0 && request.resource.data.projectType.size() < 100 &&
+                       request.resource.data.status == 'new' &&
+                       request.resource.data.source == 'chatbot';
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "Page": {
+      "title": "Page",
+      "description": "A static page on the website",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the page" },
+        "slug": { "type": "string", "description": "The URL slug for the page" },
+        "content": { "type": "string", "description": "The HTML or Markdown content of the page" },
+        "seo": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "keywords": { "type": "string" }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "authorId": { "type": "string" }
+      },
+      "required": ["title", "slug", "content"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "A journal entry",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the post" },
+        "slug": { "type": "string", "description": "The URL slug for the post" },
+        "content": { "type": "string", "description": "The content of the post" },
+        "excerpt": { "type": "string", "description": "A short summary of the post" },
+        "coverImage": { "type": "string", "description": "URL of the cover image" },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "seo": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "keywords": { "type": "string" }
+          }
+        },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "authorId": { "type": "string" }
+      },
+      "required": ["title", "slug", "content", "status"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global site settings",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string" },
+        "globalSeo": {
+          "type": "object",
+          "properties": {
+            "titleTemplate": { "type": "string" },
+            "defaultDescription": { "type": "string" },
+            "defaultKeywords": { "type": "string" }
+          }
+        }
+      }
+    },
+    "SiteContent": {
+      "title": "SiteContent",
+      "description": "Dynamic content for site pages",
+      "type": "object",
+      "properties": {
+        "hero": { "type": "object" },
+        "slides": { "type": "array" },
+        "featuredWorks": { "type": "array" },
+        "testimonials": { "type": "array" },
+        "sections": { "type": "array" },
+        "cta": { "type": "object" },
+        "stats": { "type": "array" },
+        "packages": { "type": "array" },
+        "steps": { "type": "array" },
+        "celebrity": { "type": "object" },
+        "product": { "type": "object" },
+        "philosophy": { "type": "object" },
+        "projects": { "type": "array" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" }
+      }
+    },
+    "Brochure": {
+      "title": "Brochure",
+      "description": "A client proposal or brochure",
+      "type": "object",
+      "properties": {
+        "clientName": { "type": "string" },
+        "clientPhone": { "type": "string" },
+        "clientEmail": { "type": "string" },
+        "eventType": { "type": "string" },
+        "eventDate": { "type": "string" },
+        "location": { "type": "string" },
+        "package": { "type": "object" },
+        "addons": { "type": "array" },
+        "discount": { "type": "object" },
+        "totalPrice": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "authorId": { "type": "string" }
+      },
+      "required": ["clientName", "clientPhone", "totalPrice"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "A lead generated from the chatbot or contact form",
+      "type": "object",
+      "properties": {
+        "mobile": { "type": "string" },
+        "projectType": { "type": "string" },
+        "budget": { "type": "number" },
+        "status": { "type": "string", "enum": ["new", "contacted", "qualified", "closed", "lost"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "source": { "type": "string" }
+      },
+      "required": ["mobile", "projectType", "status"]
+    }
+  },
+  "firestore": {
+    "/pages/{pageId}": { "schema": "Page", "description": "Collection of static pages" },
+    "/posts/{postId}": { "schema": "Post", "description": "Collection of journal entries" },
+    "/settings/global": { "schema": "Settings", "description": "Global site settings document" },
+    "/site_content/{contentId}": { "schema": "SiteContent", "description": "Dynamic content for site pages" },
+    "/brochures/{brochureId}": { "schema": "Brochure", "description": "Collection of client brochures" },
+    "/leads/{leadId}": { "schema": "Lead", "description": "Collection of leads" }
+  }
+}
